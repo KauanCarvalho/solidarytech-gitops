@@ -2,6 +2,8 @@
 
 Requisito do edital (item 3 — ITSM e AIOps): desenhar o fluxo de vida de um incidente, da detecção via AIOps/alerta até o Post-Mortem e comunicação aos stakeholders.
 
+O SLA de 99.5%/mês citado na etapa 7 abaixo é o compromisso formal definido em `docs/sla.md` (créditos por nível de violação, exclusões e cadência de relatório) — este documento cobre o fluxo operacional do incidente; o `docs/sla.md` cobre a obrigação contratual em si.
+
 ## Diagrama do fluxo
 
 ```

@@ -69,6 +69,7 @@ Repositório de GitOps/Infra da **SolidaryTech**: Terraform (IaC), manifestos Ku
 ├── argocd/                    # 5 Application manifests (core-infra, monitoring, 3 serviços)
 ├── docs/
 │   ├── PCN.md                 # Plano de Continuidade de Negócios (RTO/RPO)
+│   ├── sla.md                 # SLA formal com as ONGs parceiras (donation-service)
 │   ├── incident-lifecycle.md  # Ciclo de vida de incidente (ITSM/AIOps)
 │   └── finops-forecast.md     # Forecast de custo + recomendação de otimização
 ├── k8s/
@@ -145,8 +146,9 @@ Itens cuja evidência principal vive neste repositório (itens 0.1/0.3 do app-re
 | 0.5 (parcial) | Stack de observabilidade completa + APM | ✅ | `terraform/production/monitoring.tf` — kube-prometheus-stack, Loki, OTel Collector DaemonSet, Datadog | Coleta centralizada via OTel evita instrumentar cada backend direto nos serviços |
 | 1.1 | ≥2 SLIs baseados em Golden Metrics (donation-service) | ✅ | Disponibilidade + Latência, `docs/finops-forecast.md`/dashboards; SLO 99.9%/95% | Golden Metrics mais ligadas à experiência do doador no hot path |
 | 1.2 | SLO por SLI | ✅ | 99.9% disponibilidade (30d), 95% requisições <300ms — `k8s/apps/monitoring/alert-rules.yaml` | Alvo numérico é o que torna o SLI acionável |
-| 1.3 | Dashboard SRE exclusivo (SLO + Error Budget) | ✅ | `k8s/apps/monitoring/grafana-sre-dashboard.yaml` (`solidarytech-sre`, separado do dashboard geral) | Edital exige painel **exclusivo**, não misturado |
-| 1.4 | Evidência de redução de MTTR | ⏳ | Self-healing (`self-healing.yml` + Lambda) configurado; número real de teste a coletar no vídeo | Precisa de execução real do rollout restart pra medir tempo |
+| 1.3 | SLA formal com as ONGs parceiras | ✅ | `docs/sla.md` — 99.5% disponibilidade mensal, créditos por nível de violação, exclusões e cadência de relatório | Edital pede SLI **e** SLO **e** SLA; SLA externo deliberadamente mais frouxo que o SLO interno (99.9%), dando margem de reação antes de violação contratual |
+| 1.4 | Dashboard SRE exclusivo (SLO + Error Budget) | ✅ | `k8s/apps/monitoring/grafana-sre-dashboard.yaml` (`solidarytech-sre`, separado do dashboard geral) | Edital exige painel **exclusivo**, não misturado |
+| 1.5 | Evidência de redução de MTTR | ⏳ | Self-healing (`self-healing.yml` + Lambda) configurado; número real de teste a coletar no vídeo | Precisa de execução real do rollout restart pra medir tempo |
 | 2.1 | Tags obrigatórias no Terraform | ✅ | `Project/Environment/CostCenter/ManagedBy` em todo módulo (`terraform/modules/aws/*`) | Requisito nomeado literalmente no edital |
 | 2.2 | Rightsizing baseado em métrica real | ✅ | `k8s/apps/*/deployment.yaml` — donation-service com requests/limits maiores (hot path), justificativa em `docs/finops-forecast.md` | Análise por papel de serviço, não valor uniforme "no chute" |
 | 2.3 | Forecast de custo mensal + recomendação | ✅ | `docs/finops-forecast.md` — ~$230-240/mês, recomendação de agendar desligamento do node group fora do horário de uso | Orçamento limitado da ONG é a premissa do cenário |
