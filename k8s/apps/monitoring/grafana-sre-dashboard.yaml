@@ -1,0 +1,150 @@
+---
+# Dashboard SRE — SolidaryTech (donation-service)
+# Requisito do edital: painel focado EXCLUSIVAMENTE nos SLOs e no consumo
+# do Error Budget — separado do dashboard geral de saúde do ecossistema.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: solidarytech-sre-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  solidarytech-sre.json: |
+    {
+      "title": "SolidaryTech — SRE: SLOs & Error Budget (donation-service)",
+      "uid": "solidarytech-sre",
+      "timezone": "browser",
+      "refresh": "30s",
+      "schemaVersion": 38,
+      "tags": ["solidarytech", "sre", "slo"],
+      "panels": [
+        {
+          "id": 1,
+          "title": "🎯 SLI Disponibilidade (30d) — SLO: 99.9%",
+          "type": "stat",
+          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 6},
+          "targets": [
+            {
+              "expr": "(1 - (sum(increase(http_requests_total{namespace=\"donation-service\", status=~\"5..\"}[30d])) / sum(increase(http_requests_total{namespace=\"donation-service\"}[30d])))) * 100",
+              "legendFormat": "Disponibilidade 30d"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "decimals": 3,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": 0},
+                  {"color": "yellow", "value": 99.5},
+                  {"color": "green", "value": 99.9}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 2,
+          "title": "🎯 SLI Latência (30d, <300ms) — SLO: 95%",
+          "type": "stat",
+          "gridPos": {"x": 8, "y": 0, "w": 8, "h": 6},
+          "targets": [
+            {
+              "expr": "(sum(increase(http_request_duration_seconds_bucket{namespace=\"donation-service\", le=\"0.3\"}[30d])) / sum(increase(http_request_duration_seconds_count{namespace=\"donation-service\"}[30d]))) * 100",
+              "legendFormat": "% requisições < 300ms (30d)"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": 0},
+                  {"color": "yellow", "value": 90},
+                  {"color": "green", "value": 95}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "title": "🔥 Error Budget Restante (30d, SLO 99.9%)",
+          "type": "gauge",
+          "gridPos": {"x": 16, "y": 0, "w": 8, "h": 6},
+          "targets": [
+            {
+              "expr": "(1 - ((sum(increase(http_requests_total{namespace=\"donation-service\", status=~\"5..\"}[30d])) / sum(increase(http_requests_total{namespace=\"donation-service\"}[30d]))) / 0.001)) * 100",
+              "legendFormat": "Error Budget restante"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": 0},
+                  {"color": "yellow", "value": 20},
+                  {"color": "green", "value": 50}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 4,
+          "title": "📉 Burn Rate — janela rápida (5m) vs limiar crítico (14.4x)",
+          "type": "timeseries",
+          "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"donation-service\", status=~\"5..\"}[5m])) / sum(rate(http_requests_total{namespace=\"donation-service\"}[5m])) / 0.001",
+              "legendFormat": "Burn rate (múltiplo do budget)"
+            },
+            {
+              "expr": "14.4",
+              "legendFormat": "Limiar crítico (14.4x)"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "📉 Burn Rate — janela lenta (1h) vs limiar de atenção (6x)",
+          "type": "timeseries",
+          "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"donation-service\", status=~\"5..\"}[1h])) / sum(rate(http_requests_total{namespace=\"donation-service\"}[1h])) / 0.001",
+              "legendFormat": "Burn rate (múltiplo do budget)"
+            },
+            {
+              "expr": "6",
+              "legendFormat": "Limiar de atenção (6x)"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "📊 Taxa de Erro vs Latência p95 — donation-service (7d)",
+          "type": "timeseries",
+          "gridPos": {"x": 0, "y": 14, "w": 24, "h": 8},
+          "targets": [
+            {
+              "expr": "(sum(rate(http_requests_total{namespace=\"donation-service\", status=~\"5..\"}[1h])) / sum(rate(http_requests_total{namespace=\"donation-service\"}[1h]))) * 100",
+              "legendFormat": "Taxa de erro (%)"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace=\"donation-service\"}[1h])) by (le)) * 1000",
+              "legendFormat": "p95 latência (ms)"
+            }
+          ]
+        }
+      ]
+    }

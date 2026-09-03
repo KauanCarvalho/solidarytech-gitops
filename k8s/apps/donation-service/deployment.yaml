@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: donation-service
+  namespace: donation-service
+  labels:
+    app: donation-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: donation-service
+  template:
+    metadata:
+      labels:
+        app: donation-service
+    spec:
+      imagePullSecrets:
+        - name: ecr-pull-secret
+      containers:
+        - name: donation-service
+          image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/solidarytech-donation:v1.0.0-init
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: donation-service-config
+            - secretRef:
+                name: donation-service-secret
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "otel-collector.monitoring.svc.cluster.local:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "donation-service"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "namespace=donation-service"
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+          # Caminho crítico (hot path): requests/limits acima da média dos
+          # outros 2 serviços, mesmo padrão aplicado ao evaluation-service
+          # no ToggleMaster.
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "128Mi"
+            limits:
+              cpu: "600m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8082
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3

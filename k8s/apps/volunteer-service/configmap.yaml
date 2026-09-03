@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: volunteer-service-config
+  namespace: volunteer-service
+data:
+  PORT: "8083"
+  AWS_REGION: "us-east-1"
+  AWS_DYNAMODB_TABLE: "SolidaryTechVolunteers"
+  AWS_ENDPOINT_URL: ""

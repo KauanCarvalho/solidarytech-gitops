@@ -1,0 +1,148 @@
+---
+# PrometheusRule — Alertas inteligentes para a SolidaryTech
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: solidarytech-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    # SLO do donation-service (caminho crítico):
+    #   SLI Disponibilidade: % de requisições com status < 500
+    #   SLO: 99.9% em janela de 30 dias -> error budget = 0.1%
+    #   SLI Latência: % de requisições < 300ms
+    #   SLO: 95% em janela de 30 dias
+    - name: solidarytech.donation.slo
+      interval: 30s
+      rules:
+        # Burn-rate rápido: consome o error budget mensal de 30 dias em
+        # ~2 dias se sustentado (fator 14.4x, janela curta) — sinal de
+        # incidente ativo, precisa de ação imediata.
+        - alert: DonationServiceSLOBurnRateFast
+          expr: |
+            (
+              sum(rate(http_requests_total{namespace="donation-service", status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{namespace="donation-service"}[5m]))
+            ) > (14.4 * 0.001)
+          for: 2m
+          labels:
+            severity: critical
+            service: donation-service
+            namespace: donation-service
+          annotations:
+            summary: "Donation Service consumindo o error budget rapidamente (burn-rate crítico)"
+            description: "Taxa de erro do donation-service nos últimos 5m está queimando o error budget mensal (SLO 99.9%) num ritmo que o esgotaria em ~2 dias. Valor atual: {{ $value | printf \"%.4f\" }}"
+            runbook_url: "https://github.com/KauanCarvalho/solidarytech-gitops/wiki/Runbook-DonationService"
+
+        # Burn-rate lento: consome ~5% do budget em 6h — sinal de degradação
+        # persistente, não necessariamente um incidente agudo.
+        - alert: DonationServiceSLOBurnRateSlow
+          expr: |
+            (
+              sum(rate(http_requests_total{namespace="donation-service", status=~"5.."}[1h]))
+              /
+              sum(rate(http_requests_total{namespace="donation-service"}[1h]))
+            ) > (6 * 0.001)
+          for: 15m
+          labels:
+            severity: warning
+            service: donation-service
+            namespace: donation-service
+          annotations:
+            summary: "Donation Service com degradação sustentada de erro (burn-rate lento)"
+            description: "Taxa de erro do donation-service na última hora está acima do ritmo sustentável do SLO de 99.9%. Valor atual: {{ $value | printf \"%.4f\" }}"
+
+        # SLI de latência: % de requisições servidas em até 300ms deve
+        # ficar >= 95% (SLO). Alerta quando a fração "boa" cai abaixo disso.
+        - alert: DonationServiceLatencySLOViolation
+          expr: |
+            (
+              sum(rate(http_request_duration_seconds_bucket{namespace="donation-service", le="0.3"}[5m]))
+              /
+              sum(rate(http_request_duration_seconds_count{namespace="donation-service"}[5m]))
+            ) < 0.95
+          for: 5m
+          labels:
+            severity: warning
+            service: donation-service
+            namespace: donation-service
+          annotations:
+            summary: "Donation Service abaixo do SLO de latência (95% < 300ms)"
+            description: "Menos de 95% das requisições do donation-service estão completando em até 300ms nos últimos 5m. Valor atual: {{ $value | printf \"%.2f\" }} (fração dentro do SLO)"
+
+    - name: solidarytech.http.errors
+      interval: 30s
+      rules:
+        # Alerta operacional simples (limiar fixo), complementar ao burn-rate
+        # acima — mais fácil de explicar num pitch executivo.
+        - alert: DonationServiceHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{namespace="donation-service", status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{namespace="donation-service"}[5m]))
+            ) * 100 > 5
+          for: 2m
+          labels:
+            severity: critical
+            service: donation-service
+            namespace: donation-service
+          annotations:
+            summary: "Donation Service com alta taxa de erros 5xx"
+            description: "Taxa de erros 5xx no donation-service está acima de 5% há mais de 2 minutos. Valor atual: {{ $value | printf \"%.2f\" }}%"
+            runbook_url: "https://github.com/KauanCarvalho/solidarytech-gitops/wiki/Runbook-DonationService"
+
+        # Qualquer serviço com 0 pods disponíveis
+        - alert: ServiceUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{namespace=~"ngo-service|donation-service|volunteer-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Serviço {{ $labels.deployment }} sem pods disponíveis"
+            description: "O deployment {{ $labels.deployment }} no namespace {{ $labels.namespace }} tem 0 replicas disponíveis."
+
+        # Latência alta no donation-service (p95 > 2s) — sinal grosseiro,
+        # complementar ao SLI de latência baseado em SLO acima.
+        - alert: DonationServiceHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{namespace="donation-service"}[5m])) by (le)
+            ) > 2
+          for: 2m
+          labels:
+            severity: warning
+            service: donation-service
+            namespace: donation-service
+          annotations:
+            summary: "Donation Service com alta latência (p95)"
+            description: "P95 de latência do donation-service está acima de 2 segundos. Valor atual: {{ $value | printf \"%.2f\" }}s"
+
+    - name: solidarytech.resources
+      interval: 60s
+      rules:
+        # Uso de CPU acima de 80% nos nodes
+        - alert: NodeHighCPU
+          expr: |
+            (1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (node)) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CPU alta no node {{ $labels.node }}"
+            description: "Node {{ $labels.node }} está com {{ $value | printf \"%.0f\" }}% de CPU."
+
+        # Memória disponível < 20%
+        - alert: NodeLowMemory
+          expr: |
+            (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 20
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Memória baixa no node {{ $labels.instance }}"
+            description: "Node {{ $labels.instance }} tem apenas {{ $value | printf \"%.0f\" }}% de memória disponível."

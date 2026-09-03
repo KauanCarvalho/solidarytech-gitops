@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: core-infra
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KauanCarvalho/solidarytech-gitops.git
+    targetRevision: main
+    path: k8s/apps
+    directory:
+      include: '{*.yaml,*.yml}'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

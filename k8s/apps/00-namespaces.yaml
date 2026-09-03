@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ngo-service
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: donation-service
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: volunteer-service

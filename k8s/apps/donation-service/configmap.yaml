@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: donation-service-config
+  namespace: donation-service
+data:
+  PORT: "8082"
+  AWS_REGION: "us-east-1"
+  AWS_ENDPOINT_URL: ""

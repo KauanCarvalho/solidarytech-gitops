@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ngo-service-config
+  namespace: ngo-service
+data:
+  PORT: "8081"

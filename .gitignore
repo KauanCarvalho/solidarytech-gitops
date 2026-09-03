@@ -1,0 +1,29 @@
+# Directory containing local Terraform configuration, cached provider binaries, and module downloads
+**/.terraform/
+
+# File containing exact provider versions locked by Terraform to prevent dependency drift
+**/.terraform.lock.hcl
+
+# Terraform state files (we are using remote state in AWS S3, local state should never be committed)
+**/*.tfstate
+**/*.tfstate.backup
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# Overrides for variables (should be kept local only)
+*.tfvars
+*.tfvars.json
+*.tfvars.secret
+
+# Ignore CLI configuration files if any
+**/.terraformrc
+terraform.rc
+
+# Lambda build artifacts (zipped by terraform's archive_file data source)
+**/lambda/**/*.zip
+
+# Python bytecode cache
+**/__pycache__/
+*.pyc
