@@ -18,6 +18,7 @@ module "velero_backup_bucket" {
     aws = aws.dr_region
   }
   s3_bucket_name = "solidarytech-velero-backups-${data.aws_caller_identity.current.account_id}"
+  aws_region     = "us-west-2"
 }
 
 data "aws_caller_identity" "current" {}
