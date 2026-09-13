@@ -31,8 +31,25 @@ resource "helm_release" "velero" {
   create_namespace = true
   version          = "7.2.1"
 
+  # Timeout padrão do provider (300s) é curto para o Job de hook
+  # "pre-install" do chart (upgrade-crds), que faz `velero install
+  # --crds-only --apply` e depende de pull de imagem do Docker Hub —
+  # em nós EKS recém-criados/rede da AWS Academy Lab isso pode ser
+  # mais lento que 5 min.
+  timeout = 900
+
   values = [
     <<-EOT
+    # Job de hook pre-install (upgrade-crds) usa esta imagem auxiliar para
+    # aplicar as CRDs via kubectl. Sem "tag" definida, o chart tenta usar a
+    # versão do Kubernetes do cluster (ex: "1.36") como tag — mas a Bitnami
+    # removeu as tags versionadas do Docker Hub em 2025 (migração para
+    # "Bitnami Secure Images"), só "latest" continua público. Fixamos aqui
+    # para não depender de uma tag que não existe mais.
+    kubectl:
+      image:
+        tag: latest
+
     initContainers:
       - name: velero-plugin-for-aws
         image: velero/velero-plugin-for-aws:v1.10.0
