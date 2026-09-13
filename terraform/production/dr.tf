@@ -95,6 +95,12 @@ resource "helm_release" "velero" {
       # stateful no cluster (a stack de observabilidade usa emptyDir e os
       # bancos de dados são RDS/DynamoDB gerenciados, fora do cluster) —
       # o backup cobre os manifests/estado dos objetos Kubernetes.
+      # O default do chart é uma lista com 1 item em branco (name/provider
+      # nulos) em vez de lista vazia — se não sobrescrever explicitamente,
+      # o Helm cria um VolumeSnapshotLocation "default" inválido
+      # (spec.provider: Required value). Por isso o "[]" abaixo é
+      # necessário, não é só estético.
+      volumeSnapshotLocation: []
 
     credentials:
       useSecret: true
