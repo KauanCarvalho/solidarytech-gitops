@@ -23,6 +23,45 @@ module "velero_backup_bucket" {
 
 data "aws_caller_identity" "current" {}
 
+# ----- CRDs do Velero aplicadas fora do chart (bypass do hook quebrado) -----
+# O chart tem um Job de hook "pre-install" (upgrade-crds) que copia os
+# binários `sh` e `kubectl` da imagem docker.io/bitnami/kubectl para dentro
+# do container principal (imagem velero/velero) via um volume compartilhado,
+# e então roda `velero install --crds-only --dry-run -o yaml | kubectl apply
+# -f -`. Isso quebrou depois que a Bitnami trocou a imagem de base da tag
+# "latest" (única tag pública restante, ver comentário antigo removido
+# acima): o `sh` copiado agora é linkado dinamicamente contra
+# libreadline.so.8, que não existe na imagem velero/velero — o container
+# falha imediatamente com "error while loading shared libraries:
+# libreadline.so.8" e o Job esgota o backoffLimit. Confirmado rodando o Job
+# isolado manualmente fora do Helm (kubectl logs no container "velero").
+#
+# Em vez de caçar uma combinação de imagens compatível com esse truque
+# fragil de copiar binário entre containers, desabilitamos o hook
+# (upgradeCRDs: false, nos values abaixo) e aplicamos as CRDs do Velero
+# diretamente via AWS CLI + kubectl, no mesmo espírito do workaround já
+# usado no módulo de S3 (ver terraform/modules/aws/s3/s3.tf).
+resource "null_resource" "velero_crds" {
+  triggers = {
+    velero_version = "v1.14.1"
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region}
+      for crd in backuprepositories backups backupstoragelocations deletebackuprequests \
+                 downloadrequests podvolumebackups podvolumerestores restores schedules \
+                 serverstatusrequests volumesnapshotlocations; do
+        kubectl apply --server-side --force-conflicts -f \
+          "https://raw.githubusercontent.com/vmware-tanzu/velero/v1.14.1/config/crd/v1/bases/velero.io_$${crd}.yaml"
+      done
+    EOT
+  }
+
+  depends_on = [module.eks]
+}
+
 resource "helm_release" "velero" {
   name             = "velero"
   repository       = "https://vmware-tanzu.github.io/helm-charts"
@@ -31,24 +70,11 @@ resource "helm_release" "velero" {
   create_namespace = true
   version          = "7.2.1"
 
-  # Timeout padrão do provider (300s) é curto para o Job de hook
-  # "pre-install" do chart (upgrade-crds), que faz `velero install
-  # --crds-only --apply` e depende de pull de imagem do Docker Hub —
-  # em nós EKS recém-criados/rede da AWS Academy Lab isso pode ser
-  # mais lento que 5 min.
-  timeout = 900
-
   values = [
     <<-EOT
-    # Job de hook pre-install (upgrade-crds) usa esta imagem auxiliar para
-    # aplicar as CRDs via kubectl. Sem "tag" definida, o chart tenta usar a
-    # versão do Kubernetes do cluster (ex: "1.36") como tag — mas a Bitnami
-    # removeu as tags versionadas do Docker Hub em 2025 (migração para
-    # "Bitnami Secure Images"), só "latest" continua público. Fixamos aqui
-    # para não depender de uma tag que não existe mais.
-    kubectl:
-      image:
-        tag: latest
+    # CRDs já aplicadas por fora (null_resource.velero_crds) — ver comentário
+    # acima. Desabilita o Job de hook pre-install quebrado.
+    upgradeCRDs: false
 
     initContainers:
       - name: velero-plugin-for-aws
@@ -97,5 +123,5 @@ resource "helm_release" "velero" {
     EOT
   ]
 
-  depends_on = [module.eks, module.velero_backup_bucket]
+  depends_on = [module.eks, module.velero_backup_bucket, null_resource.velero_crds]
 }
