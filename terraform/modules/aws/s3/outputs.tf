@@ -1,11 +1,11 @@
 output "bucket_id" {
   description = "The ID (name) of the S3 bucket"
-  value       = aws_s3_bucket.terraform_state.id
+  value       = var.s3_bucket_name
 }
 
 output "bucket_arn" {
   description = "The ARN of the S3 bucket"
-  value       = aws_s3_bucket.terraform_state.arn
+  value       = "arn:aws:s3:::${var.s3_bucket_name}"
 }
 
 output "kms_key_arn" {
