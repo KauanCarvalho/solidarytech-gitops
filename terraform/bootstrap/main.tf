@@ -7,6 +7,7 @@ locals {
 module "s3" {
   source         = "../modules/aws/s3"
   s3_bucket_name = local.bucket_name
+  aws_region     = var.aws_region
   providers = {
     aws = aws
   }
