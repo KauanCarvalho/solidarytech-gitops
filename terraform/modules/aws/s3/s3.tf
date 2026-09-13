@@ -18,6 +18,11 @@ resource "aws_kms_alias" "terraform_state_kms_alias" {
 
 resource "aws_s3_bucket" "terraform_state" {
   bucket = var.s3_bucket_name
+  # Evita que o provider tente ler a configuração de Object Lock do bucket:
+  # o AWS Academy Learner Lab bloqueia s3:GetBucketObjectLockConfiguration
+  # via SCP com "explicit deny", o que faz o apply falhar mesmo sem o
+  # projeto usar Object Lock.
+  object_lock_enabled = false
 
   lifecycle {
     prevent_destroy = true
