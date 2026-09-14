@@ -50,3 +50,8 @@ Créditos são cumulativos por mês (não por incidente) e aplicados sobre o pr�
 ## 6. Relação com o plano de continuidade
 
 Em caso de acionamento do PCN (`docs/PCN.md`) com o RTO de 1h para o `donation-service`, o tempo de indisponibilidade durante a recuperação **conta normalmente** para o cálculo mensal do SLA — o RTO define o teto operacional de resposta da equipe, não uma exclusão contratual. Isso mantém o incentivo de manter o RTO real abaixo do praticado, em vez de tratá-lo como uma tolerância automática perante as ONGs.
+
+## 7. Evidência visual
+
+📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+![Dashboard SRE — painel "SLI Disponibilidade 30d", fonte de verdade do SLA](evidencias/sla-dashboard-disponibilidade.png)

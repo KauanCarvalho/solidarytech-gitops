@@ -27,3 +27,6 @@ terraform.rc
 # Python bytecode cache
 **/__pycache__/
 *.pyc
+
+# Chaves privadas baixadas (ex.: GitHub App), nunca devem ser commitadas
+*.pem
