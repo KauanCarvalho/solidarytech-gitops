@@ -19,7 +19,7 @@ spec:
         - name: ecr-pull-secret
       containers:
         - name: ngo-service
-          image: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/solidarytech-ngo:v1.0.0-init
+          image: 267574158150.dkr.ecr.us-east-1.amazonaws.com/solidarytech-ngo:v1.0.0-74471b2
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
