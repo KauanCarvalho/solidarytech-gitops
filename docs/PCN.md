@@ -22,7 +22,10 @@ A plataforma SolidaryTech conecta ONGs, doadores e voluntários. O `donation-ser
 - **Velero** faz backup do estado do cluster Kubernetes (manifests, Secrets, ConfigMaps — não há PersistentVolumes stateful no cluster hoje) para um bucket S3 **em `us-west-2`**, região diferente do cluster principal (`us-east-1`). Ver `terraform/production/dr.tf`.
 - Agendamento: backup diário do namespace `donation-service` (03:00 UTC, retenção 30 dias) + backup semanal do cluster inteiro.
 - **Dados de doação em si** (RDS Postgres) são protegidos separadamente por backup automático nativo do RDS (retenção 7 dias) — Velero não cobre bancos de dados gerenciados, só o estado do Kubernetes. Essa combinação (Velero + RDS automated backups) é o que efetivamente protege tanto a infraestrutura quanto os dados do hot path.
-- **Teste de restore**: evidenciado no vídeo de demonstração — `velero backup create` seguido de `velero restore create` num namespace de teste, não apenas a configuração do agendamento (o edital exige "mostrar operando na prática").
+- **Teste de restore (drill completo já executado)**: backup manual via `velero backup create`, deleção real do namespace `donation-service` em produção, e observação da recuperação — o ArgoCD `selfHeal` reconciliou o namespace/deployments em **~70-90s**, muito abaixo do RTO de 1h documentado acima; em seguida `velero restore create --from-backup ... --wait` foi executado para validar o caminho de restore Velero de ponta a ponta (`Completed`, 18/18 itens), e os endpoints (`/ngos`, `/donations`, `/volunteers/<ngo_id>`) foram revalidados após a recuperação, confirmando que os dados no RDS não foram afetados durante o drill.
+
+  📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+  ![Backup Velero criado com sucesso](evidencias/velero-backup-create.png)
 
 ## 4. Fluxo de recuperação (resumo operacional)
 
@@ -36,3 +39,16 @@ A plataforma SolidaryTech conecta ONGs, doadores e voluntários. O `donation-ser
 
 - Ambiente roda em **AWS Academy Learner Lab** — credenciais efêmeras (sessões de ~4h) tornam um DR real (não só simulado) operacionalmente inviável fora de uma janela de demonstração. Em produção real, a recomendação é migrar para uma conta AWS própria com credenciais de longa duração e IAM roles dedicadas (IRSA), o que também destravaria criptografia/backup mais robustos.
 - Não há warm-standby (Opção B do edital): o RTO de 1h assume que a reconstrução via Terraform + Velero é aceitável; um RTO menor exigiria um ambiente espelho já no ar, com custo contínuo dobrado — decisão consciente de custo-benefício para o estágio atual do projeto.
+
+## 6. Evidências visuais
+
+> Capturas de tela do drill de DR executado nesta entrega. Substituir os placeholders abaixo pelas imagens reais (mesma pasta `docs/evidencias/`) antes da entrega final.
+
+| Evidência | Comando/tela de origem | Imagem |
+|---|---|---|
+| Backup Velero criado | `velero backup create donation-service-manual --include-namespaces donation-service --wait` | ![Backup Velero](evidencias/velero-backup-create.png) |
+| Namespace de produção deletado (drill real) | `kubectl delete namespace donation-service` + `kubectl get pods -n donation-service` (`No resources found`) | ![Namespace deletado](evidencias/namespace-deleted.png) |
+| ArgoCD self-heal recuperando a aplicação | ArgoCD UI — Application `donation-service` voltando de `OutOfSync/Missing` para `Synced/Healthy` | ![ArgoCD self-heal](evidencias/argocd-selfheal.png) |
+| Velero restore completo (validação end-to-end) | `velero restore describe <nome>` → `Phase: Completed` | ![Velero restore completo](evidencias/velero-restore-completed.png) |
+| Bucket cross-region confirmado | `aws s3api get-bucket-location --bucket solidarytech-velero-backups-<account_id>` → `us-west-2` | ![Bucket cross-region](evidencias/s3-cross-region.png) |
+| Endpoints validados pós-recuperação | `curl` nos 3 endpoints via ELB retornando 200/201 | ![Smoke test pós-DR](evidencias/post-dr-smoke-test.png) |

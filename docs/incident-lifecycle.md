@@ -109,3 +109,12 @@ O SLA de 99.5%/mês citado na etapa 7 abaixo é o compromisso formal definido em
 ## Por que essa separação self-healing vs manual
 
 Self-healing (`kubectl rollout restart`) resolve a classe de incidente mais comum em produção — um pod travado/degradado que um restart resolve — sem esperar por um humano. Mas **não é acionado** para o burn-rate lento nem para anomalias do Watchdog: um restart não corrige um bug de lógica ou uma anomalia de padrão de uso, e disparar restarts automáticos nesses casos mascararia o problema real sem resolvê-lo, adiando a detecção da causa raiz.
+
+## Evidência visual
+
+📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+
+| Evidência | Imagem |
+|---|---|
+| Notificação de alerta/resolução no Discord | ![Notificação Discord](evidencias/itsm-discord-notification.png) |
+| Execução do `self-healing.yml` no GitHub Actions (rollout restart automático) | ![Self-healing workflow](evidencias/itsm-self-healing-run.png) |

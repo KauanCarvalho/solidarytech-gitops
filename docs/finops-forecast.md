@@ -52,3 +52,8 @@ Por quê essa e não outra:
 - É nativo de nuvem (EventBridge Scheduler + `aws eks update-nodegroup-config` ou Auto Scaling Schedule), não exige ferramenta terceira.
 - Alternativas descartadas: **Savings Plans/Reserved Instances** não se aplicam a um compromisso de 2 meses nem a uma conta AWS Academy Lab (sem cartão de crédito/compromisso de longo prazo); **Spot Instances** para os nodes reduziriam custo (~60-70%) mas arriscam interrupção do hot path durante uma demo ao vivo — trade-off inadequado para o contexto de avaliação.
 - Efeito estimado: desligar fora de um horário útil de ~10h/dia, 5 dias/semana (35h de 168h/semana ativas = ~21% do tempo) economiza aproximadamente **$70/mês** (79% dos ~$90 de EC2), sem tocar no EKS control plane (cobrado independentemente) nem nos dados (RDS/DynamoDB continuam ativos e intactos).
+
+## 5. Evidência visual
+
+📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+![AWS Cost Explorer filtrado por tag CostCenter=NGO-Core](evidencias/finops-cost-explorer-tags.png)

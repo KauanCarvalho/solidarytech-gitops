@@ -97,21 +97,31 @@ Repositório de GitOps/Infra da **SolidaryTech**: Terraform (IaC), manifestos Ku
 - **GitOps**: ArgoCD com `selfHeal`/`prune`, nunca `kubectl apply` manual.
 - **Observabilidade**: OTel Collector (DaemonSet) → Prometheus + Loki + Datadog, com Distributed Tracing ponta a ponta.
 
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Pipeline CI/CD verde + ArgoCD Applications Synced/Healthy](docs/evidencias/cicd-argocd-sync.png)
+
 ### 4.2. SRE (item 1)
 
 SLIs/SLOs formais do `donation-service` (disponibilidade e latência), dashboard exclusivo de SLO/Error Budget, burn-rate alerts multi-janela — ver `k8s/apps/monitoring/` e a tabela de critérios abaixo.
+
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Dashboard SRE — SLO e Error Budget](docs/evidencias/grafana-sre-dashboard.png)
 
 ### 4.3. FinOps (item 2)
 
 Tagging obrigatório, rightsizing por papel de serviço, forecast de custo mensal — ver `docs/finops-forecast.md`.
 
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Tags aplicadas no console AWS / Cost Explorer filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
+
 ### 4.4. ITSM/AIOps (item 3)
 
 Datadog Watchdog + ciclo de vida de incidente documentado — ver `docs/incident-lifecycle.md`.
 
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Datadog Watchdog / notificação Discord de incidente](docs/evidencias/itsm-watchdog-discord.png)
+
 ### 4.5. DR/Segurança (item 4)
 
 PCN com RTO/RPO + Velero (cross-region) + backup automático do RDS crítico — ver `docs/PCN.md`.
+
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Drill de DR — Velero backup/restore + ArgoCD self-heal](docs/evidencias/dr-drill.png)
 
 ---
 
@@ -149,13 +159,13 @@ Itens cuja evidência principal vive neste repositório (itens 0.1/0.3 do app-re
 | 1.3 | SLA formal com as ONGs parceiras | ✅ | `docs/sla.md` — 99.5% disponibilidade mensal, créditos por nível de violação, exclusões e cadência de relatório | Edital pede SLI **e** SLO **e** SLA; SLA externo deliberadamente mais frouxo que o SLO interno (99.9%), dando margem de reação antes de violação contratual |
 | 1.4 | Dashboard SRE exclusivo (SLO + Error Budget) | ✅ | `k8s/apps/monitoring/grafana-sre-dashboard.yaml` (`solidarytech-sre`, separado do dashboard geral) | Edital exige painel **exclusivo**, não misturado |
 | 1.5 | Evidência de redução de MTTR | ⏳ | Self-healing (`self-healing.yml` + Lambda) configurado; número real de teste a coletar no vídeo | Precisa de execução real do rollout restart pra medir tempo |
-| 2.1 | Tags obrigatórias no Terraform | ✅ | `Project/Environment/CostCenter/ManagedBy` em todo módulo (`terraform/modules/aws/*`) | Requisito nomeado literalmente no edital |
+| 2.1 | Tags obrigatórias no Terraform | ⚠️ Parcial | `Project/Environment/CostCenter/ManagedBy` presentes nos recursos de maior custo (`terraform/modules/aws/{eks,rds,ecr,dynamodb,sqs,s3,sg}`); faltam em Secrets Manager e Lambda/API Gateway (`terraform/production/external-secrets.tf`, `self-healing.tf`), subnets/IGW/route table (`modules/aws/vpc/vpc.tf`) e `aws_db_subnet_group`/`aws_security_group_rule` (`main.tf`) | Recorrigir: mover as 3 tags para `default_tags` no `provider "aws"` (`terraform.tf`) cobre 100% dos recursos automaticamente, incluindo os que hoje escapam de um filtro `CostCenter=NGO-Core` no Cost Explorer |
 | 2.2 | Rightsizing baseado em métrica real | ✅ | `k8s/apps/*/deployment.yaml` — donation-service com requests/limits maiores (hot path), justificativa em `docs/finops-forecast.md` | Análise por papel de serviço, não valor uniforme "no chute" |
 | 2.3 | Forecast de custo mensal + recomendação | ✅ | `docs/finops-forecast.md` — ~$230-240/mês, recomendação de agendar desligamento do node group fora do horário de uso | Orçamento limitado da ONG é a premissa do cenário |
 | 3.1 | AIOps ativo (Watchdog) | ⏳ | `helm_release.datadog` provisiona o Agent; ativação/evidência de anomalia depende de tráfego real | Watchdog precisa de dados reais fluindo pra detectar padrão |
 | 3.2 | Fluxo de vida de incidente desenhado | ✅ | `docs/incident-lifecycle.md` — diagrama completo detecção→post-mortem | Processo repetível, não reação ad hoc |
 | 4.1 | PCN com RTO/RPO | ✅ | `docs/PCN.md` — RTO 1h / RPO 24h pro donation-service, com justificativa | Números concretos tornam o plano auditável |
-| 4.2 | DR prático (Velero) evidenciado | ⏳ | `terraform/production/dr.tf` configurado (backup diário + semanal); restore de teste a gravar no vídeo | Edital exige mostrar operando, não só configurado |
+| 4.2 | DR prático (Velero) evidenciado | ✅ | Drill completo executado: backup manual → deleção real do namespace `donation-service` em produção → recuperação via ArgoCD `selfHeal` (~70-90s) → `velero restore create --wait` (`Completed`, 18/18) → endpoints revalidados sem perda de dados. Ver `docs/PCN.md`, seção 6 | Edital exige mostrar operando, não só configurado — drill real, não simulado |
 
 ### Entregáveis finais (ambos os repositórios)
 
