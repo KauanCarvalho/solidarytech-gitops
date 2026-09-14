@@ -7,4 +7,3 @@ data:
   PORT: "8083"
   AWS_REGION: "us-east-1"
   AWS_DYNAMODB_TABLE: "SolidaryTechVolunteers"
-  AWS_ENDPOINT_URL: ""
