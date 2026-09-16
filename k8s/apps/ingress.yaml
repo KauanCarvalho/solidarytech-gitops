@@ -8,9 +8,10 @@ spec:
   rules:
     - http:
         paths:
-          # Todas as rotas dos 3 serviços já incluem o próprio prefixo
-          # internamente (/ngos, /donations, /volunteers), então nenhum
-          # rewrite é necessário — diferente do ToggleMaster.
+          # Rotas de negócio: cada serviço registra sua rota já com o
+          # próprio prefixo internamente (/ngos, /donations, /volunteers),
+          # então nenhum rewrite é necessário aqui — diferente do
+          # ToggleMaster. /health é tratado à parte, ver Ingress abaixo.
           - path: /ngos
             pathType: Prefix
             backend:
@@ -27,6 +28,45 @@ spec:
                   number: 80
           - path: /volunteers
             pathType: Prefix
+            backend:
+              service:
+                name: volunteer-service-ext
+                port:
+                  number: 80
+---
+# Rotas dedicadas de health check: os 3 serviços registram /health SEM o
+# prefixo do próprio serviço (ex: ngo-service tem /health e /ngos, não
+# /ngos/health), diferente das rotas de negócio acima. Precisa de um
+# Ingress separado porque rewrite-target é uma annotation por objeto —
+# aplicá-la no Ingress principal quebraria o prefixo das rotas de negócio.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: solidarytech-ingress-health
+  namespace: donation-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /health
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /ngos/health
+            pathType: Exact
+            backend:
+              service:
+                name: ngo-service-ext
+                port:
+                  number: 80
+          - path: /donations/health
+            pathType: Exact
+            backend:
+              service:
+                name: donation-service
+                port:
+                  number: 80
+          - path: /volunteers/health
+            pathType: Exact
             backend:
               service:
                 name: volunteer-service-ext
