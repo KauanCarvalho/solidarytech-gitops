@@ -58,9 +58,13 @@ Key=CostCenter,Values=NGO-Core` retorna os 33 recursos da stack.
 não funciona nesta conta — `aws ce list-cost-allocation-tags` retorna `AccessDeniedException: Linked account
 doesn't have access to cost allocation tags`. Contas linked de uma AWS Organization (o modelo do Academy
 Learner Lab) não podem ativar Cost Allocation Tags; isso é controlado pela conta de management/payer da
-instituição, fora do alcance do time. A evidência de chargeback por tag usa o console **Resource Groups & Tag
-Editor** (filtro `CostCenter=NGO-Core`) no lugar do Cost Explorer — tecnicamente equivalente para provar que
-o isolamento de custo por tag está pronto, mesmo sem acesso ao recurso de billing agregado por tag.
+instituição, fora do alcance do time. O console **Resource Groups & Tag Editor** também não é viável — a UI
+atual roteia a busca via Resource Explorer (`resource-explorer-2:Search`), barrado por uma SCP explícita da
+mesma Organization (`AccessDeniedException`, sem contorno possível pelo usuário). A evidência de chargeback
+por tag usa a **AWS CLI** direto (`aws resourcegroupstaggingapi get-resources --tag-filters
+Key=CostCenter,Values=NGO-Core`), que não passa pelo Resource Explorer e funciona normalmente — tecnicamente
+equivalente para provar que o isolamento de custo por tag está pronto, mesmo sem acesso ao billing agregado
+por tag nem ao console de tagging.
 
 ## 4. Recomendação prática de otimização nativa de nuvem
 
@@ -75,4 +79,4 @@ Por quê essa e não outra:
 ## 5. Evidência visual
 
 📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
-![Console AWS Resource Groups & Tag Editor filtrado por CostCenter=NGO-Core](evidencias/finops-tags-cost-explorer.png)
+![aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core — 33 recursos retornados](evidencias/finops-tags-cost-explorer.png)

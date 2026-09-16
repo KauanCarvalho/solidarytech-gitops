@@ -109,7 +109,7 @@ SLIs/SLOs formais do `donation-service` (disponibilidade e latência), dashboard
 
 Tagging obrigatório, rightsizing por papel de serviço, forecast de custo mensal — ver `docs/finops-forecast.md`.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Tags aplicadas no console AWS / Resource Groups & Tag Editor filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Tags aplicadas — aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
 
 ### 4.4. ITSM/AIOps (item 3)
 
