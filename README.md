@@ -109,7 +109,7 @@ SLIs/SLOs formais do `donation-service` (disponibilidade e latência), dashboard
 
 Tagging obrigatório, rightsizing por papel de serviço, forecast de custo mensal — ver `docs/finops-forecast.md`.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Tags aplicadas no console AWS / Cost Explorer filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
+📸 **Evidência visual:** _(inserir antes da entrega)_ ![Tags aplicadas no console AWS / Resource Groups & Tag Editor filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
 
 ### 4.4. ITSM/AIOps (item 3)
 
@@ -159,7 +159,7 @@ Itens cuja evidência principal vive neste repositório (itens 0.1/0.3 do app-re
 | 1.3 | SLA formal com as ONGs parceiras | ✅ | `docs/sla.md` — 99.5% disponibilidade mensal, créditos por nível de violação, exclusões e cadência de relatório | Edital pede SLI **e** SLO **e** SLA; SLA externo deliberadamente mais frouxo que o SLO interno (99.9%), dando margem de reação antes de violação contratual |
 | 1.4 | Dashboard SRE exclusivo (SLO + Error Budget) | ✅ | `k8s/apps/monitoring/grafana-sre-dashboard.yaml` (`solidarytech-sre`, separado do dashboard geral) | Edital exige painel **exclusivo**, não misturado |
 | 1.5 | Evidência de redução de MTTR | ⏳ | Self-healing (`self-healing.yml` + Lambda) configurado; número real de teste a coletar no vídeo | Precisa de execução real do rollout restart pra medir tempo |
-| 2.1 | Tags obrigatórias no Terraform | ⚠️ Parcial | `Project/Environment/CostCenter/ManagedBy` presentes nos recursos de maior custo (`terraform/modules/aws/{eks,rds,ecr,dynamodb,sqs,s3,sg}`); faltam em Secrets Manager e Lambda/API Gateway (`terraform/production/external-secrets.tf`, `self-healing.tf`), subnets/IGW/route table (`modules/aws/vpc/vpc.tf`) e `aws_db_subnet_group`/`aws_security_group_rule` (`main.tf`) | Recorrigir: mover as 3 tags para `default_tags` no `provider "aws"` (`terraform.tf`) cobre 100% dos recursos automaticamente, incluindo os que hoje escapam de um filtro `CostCenter=NGO-Core` no Cost Explorer |
+| 2.1 | Tags obrigatórias no Terraform | ✅ | `Project/Environment/CostCenter/ManagedBy` via `default_tags` no `provider "aws"` (`terraform/production/terraform.tf`) — cobre os 33 recursos da stack, validado via `aws resourcegroupstaggingapi get-resources` | `default_tags` fecha os gaps que existiam por módulo (Secrets Manager, Lambda/API Gateway, subnets/IGW/route table da VPC, `aws_db_subnet_group`) sem precisar repetir bloco em cada um; Cost Explorer filtrado por tag não é viável nesta conta (linked account do AWS Academy — ver `docs/finops-forecast.md` §3), evidência usa Resource Groups & Tag Editor |
 | 2.2 | Rightsizing baseado em métrica real | ✅ | `k8s/apps/*/deployment.yaml` — donation-service com requests/limits maiores (hot path), justificativa em `docs/finops-forecast.md` | Análise por papel de serviço, não valor uniforme "no chute" |
 | 2.3 | Forecast de custo mensal + recomendação | ✅ | `docs/finops-forecast.md` — ~$230-240/mês, recomendação de agendar desligamento do node group fora do horário de uso | Orçamento limitado da ONG é a premissa do cenário |
 | 3.1 | AIOps ativo (Watchdog) | ⏳ | `helm_release.datadog` provisiona o Agent; ativação/evidência de anomalia depende de tráfego real | Watchdog precisa de dados reais fluindo pra detectar padrão |

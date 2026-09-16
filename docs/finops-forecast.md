@@ -31,17 +31,36 @@ Todos os 3 usam HPA (`minReplicas: 2, maxReplicas: 5`, alvo 70% CPU / 80% memór
 
 ## 3. Tagging para chargeback (evidência)
 
-Todo recurso Terraform carrega as 5 tags obrigatórias (`terraform/modules/aws/*/*.tf`):
+Todo recurso Terraform carrega as 4 tags obrigatórias, via `default_tags` no `provider "aws"`
+(`terraform/production/terraform.tf`) — cobre 100% dos recursos automaticamente, inclusive os que não
+suportam um bloco `tags = {}` explícito por módulo (subnets/IGW/route table da VPC, `aws_db_subnet_group`,
+os secrets do Secrets Manager, o Lambda/API Gateway do self-healing):
+
 ```hcl
-tags = {
-  Name        = <recurso>
-  Project     = "SolidaryTech"
-  Environment = "Production"
-  CostCenter  = "NGO-Core"
-  ManagedBy   = "terraform"
+provider "aws" {
+  region = var.aws_region
+
+  default_tags {
+    tags = {
+      Project     = "SolidaryTech"
+      Environment = "Production"
+      CostCenter  = "NGO-Core"
+      ManagedBy   = "terraform"
+    }
+  }
 }
 ```
-Isso permite filtrar o AWS Cost Explorer por `CostCenter=NGO-Core` e isolar o custo da SolidaryTech de qualquer outro projeto na mesma conta — pré-requisito para o forecast acima ser auditável, não só estimado.
+
+Validado via Resource Groups Tagging API — `aws resourcegroupstaggingapi get-resources --tag-filters
+Key=CostCenter,Values=NGO-Core` retorna os 33 recursos da stack.
+
+**Limitação de conta (AWS Academy Learner Lab)**: o Cost Explorer filtrado por tag (`GroupBy TAG=CostCenter`)
+não funciona nesta conta — `aws ce list-cost-allocation-tags` retorna `AccessDeniedException: Linked account
+doesn't have access to cost allocation tags`. Contas linked de uma AWS Organization (o modelo do Academy
+Learner Lab) não podem ativar Cost Allocation Tags; isso é controlado pela conta de management/payer da
+instituição, fora do alcance do time. A evidência de chargeback por tag usa o console **Resource Groups & Tag
+Editor** (filtro `CostCenter=NGO-Core`) no lugar do Cost Explorer — tecnicamente equivalente para provar que
+o isolamento de custo por tag está pronto, mesmo sem acesso ao recurso de billing agregado por tag.
 
 ## 4. Recomendação prática de otimização nativa de nuvem
 
@@ -56,4 +75,4 @@ Por quê essa e não outra:
 ## 5. Evidência visual
 
 📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
-![AWS Cost Explorer filtrado por tag CostCenter=NGO-Core](evidencias/finops-cost-explorer-tags.png)
+![Console AWS Resource Groups & Tag Editor filtrado por CostCenter=NGO-Core](evidencias/finops-tags-cost-explorer.png)
