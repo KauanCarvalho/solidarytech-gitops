@@ -97,25 +97,25 @@ Repositório de GitOps/Infra da **SolidaryTech**: Terraform (IaC), manifestos Ku
 - **GitOps**: ArgoCD com `selfHeal`/`prune`, nunca `kubectl apply` manual.
 - **Observabilidade**: OTel Collector (DaemonSet) → Prometheus + Loki + Datadog, com Distributed Tracing ponta a ponta.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Pipeline CI/CD verde + ArgoCD Applications Synced/Healthy](docs/evidencias/cicd-argocd-sync.png)
+📸 **Evidência visual:** ![Pipeline CI/CD verde + ArgoCD Applications Synced/Healthy](docs/evidencias/cicd-argocd-sync.png)
 
 ### 4.2. SRE (item 1)
 
 SLIs/SLOs formais do `donation-service` (disponibilidade e latência), dashboard exclusivo de SLO/Error Budget, burn-rate alerts multi-janela — ver `k8s/apps/monitoring/` e a tabela de critérios abaixo.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Dashboard SRE — SLO e Error Budget](docs/evidencias/grafana-sre-dashboard.png)
+📸 **Evidência visual:** ![Dashboard SRE — SLO e Error Budget](docs/evidencias/grafana-sre-dashboard.png)
 
 ### 4.3. FinOps (item 2)
 
 Tagging obrigatório, rightsizing por papel de serviço, forecast de custo mensal — ver `docs/finops-forecast.md`.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Tags aplicadas — aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
+📸 **Evidência visual:** ![Tags aplicadas — aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
 
 ### 4.4. ITSM/AIOps (item 3)
 
 Datadog Watchdog + ciclo de vida de incidente documentado — ver `docs/incident-lifecycle.md`.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_
+📸 **Evidência visual:**
 ![Datadog Watchdog — anomalia de error rate detectada automaticamente](docs/evidencias/itsm-datadog-watchdog.png)
 ![Notificação de self-healing no Discord](docs/evidencias/itsm-discord-notification.png)
 
@@ -123,7 +123,7 @@ Datadog Watchdog + ciclo de vida de incidente documentado — ver `docs/incident
 
 PCN com RTO/RPO + Velero (cross-region) + backup automático do RDS crítico — ver `docs/PCN.md`.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Drill de DR — Velero backup/restore + ArgoCD self-heal](docs/evidencias/dr-drill.png)
+📸 **Evidência visual:** ![Drill de DR — Velero backup/restore + ArgoCD self-heal](docs/evidencias/dr-drill.png)
 
 ---
 

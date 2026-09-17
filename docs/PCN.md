@@ -24,7 +24,7 @@ A plataforma SolidaryTech conecta ONGs, doadores e voluntários. O `donation-ser
 - **Dados de doação em si** (RDS Postgres) são protegidos separadamente por backup automático nativo do RDS (retenção 7 dias) — Velero não cobre bancos de dados gerenciados, só o estado do Kubernetes. Essa combinação (Velero + RDS automated backups) é o que efetivamente protege tanto a infraestrutura quanto os dados do hot path.
 - **Teste de restore (drill completo já executado)**: backup manual via `velero backup create`, deleção real do namespace `donation-service` em produção, e observação da recuperação — o ArgoCD `selfHeal` reconciliou o namespace/deployments em **~70-90s**, muito abaixo do RTO de 1h documentado acima; em seguida `velero restore create --from-backup ... --wait` foi executado para validar o caminho de restore Velero de ponta a ponta (`Completed`, 18/18 itens), e os endpoints (`/ngos`, `/donations`, `/volunteers/<ngo_id>`) foram revalidados após a recuperação, confirmando que os dados no RDS não foram afetados durante o drill.
 
-  📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+  📸 **Evidência visual:**
   ![Backup Velero criado com sucesso](evidencias/velero-backup-create.png)
 
 ## 4. Fluxo de recuperação (resumo operacional)

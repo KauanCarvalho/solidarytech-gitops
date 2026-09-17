@@ -53,5 +53,5 @@ Em caso de acionamento do PCN (`docs/PCN.md`) com o RTO de 1h para o `donation-s
 
 ## 7. Evidência visual
 
-📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+📸 **Evidência visual:**
 ![Dashboard SRE — painel "SLI Disponibilidade 30d", fonte de verdade do SLA](evidencias/sla-dashboard-disponibilidade.png)

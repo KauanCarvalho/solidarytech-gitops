@@ -78,5 +78,5 @@ Por quê essa e não outra:
 
 ## 5. Evidência visual
 
-📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+📸 **Evidência visual:**
 ![aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core — 33 recursos retornados](evidencias/finops-tags-cost-explorer.png)

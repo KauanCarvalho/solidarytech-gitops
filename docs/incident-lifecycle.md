@@ -112,7 +112,7 @@ Self-healing (`kubectl rollout restart`) resolve a classe de incidente mais comu
 
 ## Evidência visual
 
-📸 **Evidência visual:** _(inserir screenshot antes da entrega)_
+📸 **Evidência visual:**
 
 | Evidência | Imagem |
 |---|---|
