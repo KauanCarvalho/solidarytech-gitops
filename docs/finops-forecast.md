@@ -68,13 +68,15 @@ por tag nem ao console de tagging.
 
 ## 4. Recomendação prática de otimização nativa de nuvem
 
-**Recomendação: agendar desligamento do Node Group fora do horário de uso do hackathon (nights/weekends) via um Scheduled Action / EventBridge que ajusta `desired_size`/`min_size` do node group para 0.**
+**Recomendação: separar os node groups do EKS por perfil de risco — capacidade On-Demand dedicada ao `donation-service` (hot path), e Spot Instances para `ngo-service`/`volunteer-service` (CRUD simples, tolera uma interrupção ocasional de minutos).**
 
 Por quê essa e não outra:
-- O ambiente é usado para demonstração/desenvolvimento por ~2 meses, não é produção 24/7 real — pagar os ~$90/mês de EC2 (a maior linha do orçamento, à frente até do control plane do EKS a ~$73) durante horas em que ninguém está testando é desperdício direto, exatamente o tipo de "orçamento fora de controle" que o cenário do edital descreve.
-- É nativo de nuvem (EventBridge Scheduler + `aws eks update-nodegroup-config` ou Auto Scaling Schedule), não exige ferramenta terceira.
-- Alternativas descartadas: **Savings Plans/Reserved Instances** não se aplicam a um compromisso de 2 meses nem a uma conta AWS Academy Lab (sem cartão de crédito/compromisso de longo prazo); **Spot Instances** para os nodes reduziriam custo (~60-70%) mas arriscam interrupção do hot path durante uma demo ao vivo — trade-off inadequado para o contexto de avaliação.
-- Efeito estimado: desligar fora de um horário útil de ~10h/dia, 5 dias/semana (35h de 168h/semana ativas = ~21% do tempo) economiza aproximadamente **$70/mês** (79% dos ~$90 de EC2), sem tocar no EKS control plane (cobrado independentemente) nem nos dados (RDS/DynamoDB continuam ativos e intactos).
+- O cenário do edital é explícito: **"se a nuvem cair, as doações não podem parar"**. Qualquer recomendação que reduza disponibilidade do `donation-service` — inclusive desligar nodes fora de um "horário de uso" arbitrário — contradiz esse requisito; a SolidaryTech já "ganhou destaque em rede nacional", ou seja, pode receber doação a qualquer hora. A otimização precisa respeitar isso, não ignorá-lo.
+- EC2 dos nodes (~$90/mês) é a maior linha do orçamento, à frente do control plane do EKS (~$73/mês) — é onde a otimização tem mais efeito.
+- **Spot Instances** para todo o cluster foram descartadas numa primeira análise por arriscarem o hot path durante uma demo ao vivo — mas esse risco é do `donation-service`, não do cluster inteiro. Isolando o risco por node group, `ngo-service`/`volunteer-service` capturam o desconto de Spot (~60-70%) sem expor o caminho crítico a interrupção nenhuma.
+- **Savings Plans/Reserved Instances** continuam descartados: não se aplicam a um compromisso de 2 meses nem a uma conta AWS Academy Lab (sem cartão de crédito/compromisso de longo prazo).
+- É nativo de nuvem (Managed Node Groups com `capacity_type = "SPOT"` no Terraform, `nodeSelector`/taints no Kubernetes pra garantir que o `donation-service` só agende no node group On-Demand), sem ferramenta terceira.
+- Efeito estimado: 1 node On-Demand dedicado ao `donation-service` (~$30/mês) + 2 nodes Spot pros outros dois serviços a ~35% do preço On-Demand (~$21/mês) ≈ **$51/mês**, uma economia de **~$38/mês (≈42%)** sobre os ~$90/mês atuais — sem reduzir a disponibilidade do caminho crítico em nenhum momento, e sem tocar no EKS control plane nem nos dados (RDS/DynamoDB continuam ativos e intactos).
 
 ## 5. Evidência visual
 
