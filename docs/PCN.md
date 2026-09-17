@@ -42,7 +42,7 @@ A plataforma SolidaryTech conecta ONGs, doadores e voluntários. O `donation-ser
 
 ## 6. Evidências visuais
 
-> Capturas de tela do drill de DR executado nesta entrega. Substituir os placeholders abaixo pelas imagens reais (mesma pasta `docs/evidencias/`) antes da entrega final.
+> Capturas de tela do drill de DR executado nesta entrega (pasta `docs/evidencias/`).
 
 | Evidência | Comando/tela de origem | Imagem |
 |---|---|---|
