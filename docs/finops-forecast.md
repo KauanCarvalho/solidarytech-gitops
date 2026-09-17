@@ -82,3 +82,11 @@ Por quê essa e não outra:
 
 📸 **Evidência visual:**
 ![aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core — 33 recursos retornados](evidencias/finops-tags-cost-explorer.png)
+
+Comando executado para gerar a evidência acima:
+
+```bash
+aws resourcegroupstaggingapi get-resources --tag-filters Key=CostCenter,Values=NGO-Core --query 'ResourceTagMappingList[].ResourceARN' --output table
+```
+
+Consulta a Resource Groups Tagging API filtrando os recursos pela tag `CostCenter=NGO-Core` (`--tag-filters`), extrai só os ARNs de cada recurso retornado (`--query`) e formata o resultado em tabela (`--output table`) — é a evidência de chargeback por tag descrita na seção 3, usada como alternativa ao Cost Explorer/Resource Explorer (bloqueados nesta conta AWS Academy).

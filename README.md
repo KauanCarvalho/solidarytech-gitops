@@ -111,6 +111,8 @@ Tagging obrigatório, rightsizing por papel de serviço, forecast de custo mensa
 
 📸 **Evidência visual:** ![Tags aplicadas — aws resourcegroupstaggingapi get-resources filtrado por CostCenter=NGO-Core](docs/evidencias/finops-tags-cost-explorer.png)
 
+Comando: `aws resourcegroupstaggingapi get-resources --tag-filters Key=CostCenter,Values=NGO-Core --query 'ResourceTagMappingList[].ResourceARN' --output table` — lista em tabela os ARNs de todos os recursos marcados com `CostCenter=NGO-Core`, evidenciando o chargeback por tag (detalhes em `docs/finops-forecast.md`).
+
 ### 4.4. ITSM/AIOps (item 3)
 
 Datadog Watchdog + ciclo de vida de incidente documentado — ver `docs/incident-lifecycle.md`.
