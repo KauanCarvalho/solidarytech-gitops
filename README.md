@@ -115,7 +115,9 @@ Tagging obrigatório, rightsizing por papel de serviço, forecast de custo mensa
 
 Datadog Watchdog + ciclo de vida de incidente documentado — ver `docs/incident-lifecycle.md`.
 
-📸 **Evidência visual:** _(inserir antes da entrega)_ ![Datadog Watchdog / notificação Discord de incidente](docs/evidencias/itsm-watchdog-discord.png)
+📸 **Evidência visual:** _(inserir antes da entrega)_
+![Datadog Watchdog — anomalia de error rate detectada automaticamente](docs/evidencias/itsm-datadog-watchdog.png)
+![Notificação de self-healing no Discord](docs/evidencias/itsm-discord-notification.png)
 
 ### 4.5. DR/Segurança (item 4)
 

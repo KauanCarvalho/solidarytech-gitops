@@ -116,5 +116,6 @@ Self-healing (`kubectl rollout restart`) resolve a classe de incidente mais comu
 
 | Evidência | Imagem |
 |---|---|
+| Datadog Watchdog detectando anomalia de error rate automaticamente (AIOps) | ![Datadog Watchdog](evidencias/itsm-datadog-watchdog.png) |
 | Notificação de alerta/resolução no Discord | ![Notificação Discord](evidencias/itsm-discord-notification.png) |
 | Execução do `self-healing.yml` no GitHub Actions (rollout restart automático) | ![Self-healing workflow](evidencias/itsm-self-healing-run.png) |
