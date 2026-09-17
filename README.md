@@ -11,7 +11,7 @@ Turma: **2DCLT** — DevOps e Arquitetura Cloud Pós Tech.
 | Pedro Henrique Coittinho Marcondes de Andrade | 369367 |
 
 Repositório de aplicação (código-fonte, CI, containers): [solidarytech-app](https://github.com/KauanCarvalho/solidarytech-app)
-Vídeo de demonstração: _(adicionar link antes da entrega)_
+Vídeo de demonstração: https://youtu.be/3_mbVJif344
 
 ---
 
@@ -181,4 +181,4 @@ Itens cuja evidência principal vive neste repositório (itens 0.1/0.3 do app-re
 
 - Repositório de aplicação: https://github.com/KauanCarvalho/solidarytech-app
 - Código-fonte base fornecido: https://github.com/dougls/hackathon-DCLT
-- Vídeo de demonstração: _(adicionar antes da entrega)_
+- Vídeo de demonstração: https://youtu.be/3_mbVJif344
