@@ -71,7 +71,7 @@ por tag nem ao console de tagging.
 **Recomendação: agendar desligamento do Node Group fora do horário de uso do hackathon (nights/weekends) via um Scheduled Action / EventBridge que ajusta `desired_size`/`min_size` do node group para 0.**
 
 Por quê essa e não outra:
-- O ambiente é usado para demonstração/desenvolvimento por ~2 meses, não é produção 24/7 real — pagar os ~$90/mês de EC2 (maior linha do orçamento depois do control plane do EKS) durante horas em que ninguém está testando é desperdício direto, exatamente o tipo de "orçamento fora de controle" que o cenário do edital descreve.
+- O ambiente é usado para demonstração/desenvolvimento por ~2 meses, não é produção 24/7 real — pagar os ~$90/mês de EC2 (a maior linha do orçamento, à frente até do control plane do EKS a ~$73) durante horas em que ninguém está testando é desperdício direto, exatamente o tipo de "orçamento fora de controle" que o cenário do edital descreve.
 - É nativo de nuvem (EventBridge Scheduler + `aws eks update-nodegroup-config` ou Auto Scaling Schedule), não exige ferramenta terceira.
 - Alternativas descartadas: **Savings Plans/Reserved Instances** não se aplicam a um compromisso de 2 meses nem a uma conta AWS Academy Lab (sem cartão de crédito/compromisso de longo prazo); **Spot Instances** para os nodes reduziriam custo (~60-70%) mas arriscam interrupção do hot path durante uma demo ao vivo — trade-off inadequado para o contexto de avaliação.
 - Efeito estimado: desligar fora de um horário útil de ~10h/dia, 5 dias/semana (35h de 168h/semana ativas = ~21% do tempo) economiza aproximadamente **$70/mês** (79% dos ~$90 de EC2), sem tocar no EKS control plane (cobrado independentemente) nem nos dados (RDS/DynamoDB continuam ativos e intactos).
